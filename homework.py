@@ -53,7 +53,7 @@ def get_homework_statuses(current_timestamp):
         )
         return homework_statuses.json()
     except Exception as e:
-        logger.error("Ошибка получения статуса {e}")
+        logger.error(f"Ошибка получения статуса {e}")
 
 
 def send_message(message, bot_client):
