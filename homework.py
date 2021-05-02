@@ -3,9 +3,24 @@ import time
 
 import requests
 import telegram
+import logging
+from logging.handlers import RotatingFileHandler
 from dotenv import load_dotenv
+from telegram import message
 
 load_dotenv()
+
+logging.basicConfig(
+    level=logging.DEBUG,
+    filename='bot.log', 
+    format='%(asctime)s, %(levelname)s, %(message)s, %(name)s',
+    filemode='a'
+)
+
+logger = logging.getLogger(__name__)
+logger.setLevel(logging.INFO)
+handler = RotatingFileHandler('bot.log', maxBytes=50000000, backupCount=5)
+logger.addHandler(handler) 
 
 
 PRAKTIKUM_TOKEN = os.getenv("PRAKTIKUM_TOKEN")
@@ -14,8 +29,8 @@ CHAT_ID = os.getenv('TELEGRAM_CHAT_ID')
 
 
 def parse_homework_status(homework):
-    homework_name = ...
-    if ...
+    homework_name = homework.get("homework_name")
+    if homework.get("status") == "rejected":
         verdict = 'К сожалению в работе нашлись ошибки.'
     else:
         verdict = 'Ревьюеру всё понравилось, можно приступать к следующему уроку.'
@@ -23,25 +38,33 @@ def parse_homework_status(homework):
 
 
 def get_homework_statuses(current_timestamp):
-    ...
-    homework_statuses = ...
+    params = {
+        "from_date": current_timestamp
+    }
+    headers = {
+        "Authorization": f"OAuth {PRAKTIKUM_TOKEN}"
+    }
+    homework_statuses = requests.get(f"https://praktikum.yandex.ru/api/user_api/homework_statuses/", params=params, headers=headers)
     return homework_statuses.json()
 
 
 def send_message(message, bot_client):
-    ...
-    return bot_client.send_message(...)
+    chat_id = CHAT_ID
+    return bot_client.send_message(chat_id, message)
 
 
 def main():
     # проинициализировать бота здесь
+    logging.debug("Bot started")
+    bot_client = telegram.Bot(token=TELEGRAM_TOKEN)
     current_timestamp = int(time.time())  # начальное значение timestamp
 
     while True:
         try:
             new_homework = get_homework_statuses(current_timestamp)
             if new_homework.get('homeworks'):
-                send_message(parse_homework_status(new_homework.get('homeworks')[0]))
+                send_message(parse_homework_status(new_homework.get('homeworks')[0]), bot_client)
+                logging.info("Message sent")
             current_timestamp = new_homework.get('current_date', current_timestamp)  # обновить timestamp
             time.sleep(300)  # опрашивать раз в пять минут
 
