@@ -6,13 +6,12 @@ import telegram
 import logging
 from logging.handlers import RotatingFileHandler
 from dotenv import load_dotenv
-from telegram import message
 
 load_dotenv()
 
 logging.basicConfig(
     level=logging.DEBUG,
-    filename='bot.log', 
+    filename='bot.log',
     format='%(asctime)s, %(levelname)s, %(message)s, %(name)s',
     filemode='a'
 )
@@ -20,12 +19,13 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
 handler = RotatingFileHandler('bot.log', maxBytes=50000000, backupCount=5)
-logger.addHandler(handler) 
+logger.addHandler(handler)
 
 
 PRAKTIKUM_TOKEN = os.getenv("PRAKTIKUM_TOKEN")
 TELEGRAM_TOKEN = os.getenv('TELEGRAM_TOKEN')
 CHAT_ID = os.getenv('TELEGRAM_CHAT_ID')
+API_PRAKTIKUM = os.getenv("API_PRAKTIKUM")
 
 
 def parse_homework_status(homework):
@@ -44,7 +44,7 @@ def get_homework_statuses(current_timestamp):
     headers = {
         "Authorization": f"OAuth {PRAKTIKUM_TOKEN}"
     }
-    homework_statuses = requests.get(f"https://praktikum.yandex.ru/api/user_api/homework_statuses/", params=params, headers=headers)
+    homework_statuses = requests.get(API_PRAKTIKUM, params=params, headers=headers)
     return homework_statuses.json()
 
 
@@ -63,9 +63,12 @@ def main():
         try:
             new_homework = get_homework_statuses(current_timestamp)
             if new_homework.get('homeworks'):
-                send_message(parse_homework_status(new_homework.get('homeworks')[0]), bot_client)
+                send_message(
+                    parse_homework_status(new_homework.get('homeworks')[0]),
+                    bot_client
+                )
                 logging.info("Message sent")
-            current_timestamp = new_homework.get('current_date', current_timestamp)  # обновить timestamp
+            current_timestamp = new_homework.get('current_date', current_timestamp)
             time.sleep(300)  # опрашивать раз в пять минут
 
         except Exception as e:
