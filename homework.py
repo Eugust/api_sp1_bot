@@ -44,7 +44,11 @@ def get_homework_statuses(current_timestamp):
     headers = {
         "Authorization": f"OAuth {PRAKTIKUM_TOKEN}"
     }
-    homework_statuses = requests.get(API_PRAKTIKUM, params=params, headers=headers)
+    homework_statuses = requests.get(
+        API_PRAKTIKUM,
+        params=params,
+        headers=headers
+    )
     return homework_statuses.json()
 
 
@@ -64,7 +68,9 @@ def main():
             new_homework = get_homework_statuses(current_timestamp)
             if new_homework.get('homeworks'):
                 send_message(
-                    parse_homework_status(new_homework.get('homeworks')[0]),
+                    parse_homework_status(
+                        new_homework.get('homeworks')[0]
+                    ),
                     bot_client
                 )
                 logging.info("Message sent")
