@@ -26,6 +26,7 @@ PRAKTIKUM_TOKEN = os.getenv("PRAKTIKUM_TOKEN")
 TELEGRAM_TOKEN = os.getenv('TELEGRAM_TOKEN')
 CHAT_ID = os.getenv('TELEGRAM_CHAT_ID')
 API_PRAKTIKUM = os.getenv("API_PRAKTIKUM")
+SUCCESS = 'Ревьюеру всё понравилось, можно приступать к следующему уроку.'
 
 
 def parse_homework_status(homework):
@@ -33,7 +34,7 @@ def parse_homework_status(homework):
     if homework.get("status") == "rejected":
         verdict = 'К сожалению в работе нашлись ошибки.'
     else:
-        verdict = 'Ревьюеру всё понравилось, можно приступать к следующему уроку.'
+        verdict = SUCCESS
     return f'У вас проверили работу "{homework_name}"!\n\n{verdict}'
 
 
@@ -44,13 +45,15 @@ def get_homework_statuses(current_timestamp):
     headers = {
         "Authorization": f"OAuth {PRAKTIKUM_TOKEN}"
     }
-    homework_statuses = requests.get(API_PRAKTIKUM, params=params, headers=headers)
-    homework_statuses = requests.get(
-        API_PRAKTIKUM,
-        params=params,
-        headers=headers
-    )
-    return homework_statuses.json()
+    try:
+        homework_statuses = requests.get(
+            API_PRAKTIKUM,
+            params=params,
+            headers=headers
+        )
+        return homework_statuses.json()
+    except Exception as e:
+        logger.error("Ошибка получения статуса {e}")
 
 
 def send_message(message, bot_client):
@@ -59,17 +62,15 @@ def send_message(message, bot_client):
 
 
 def main():
-    # проинициализировать бота здесь
     logging.debug("Bot started")
     bot_client = telegram.Bot(token=TELEGRAM_TOKEN)
-    current_timestamp = int(time.time())  # начальное значение timestamp
+    current_timestamp = int(time.time())
 
     while True:
         try:
             new_homework = get_homework_statuses(current_timestamp)
             if new_homework.get('homeworks'):
                 send_message(
-                    parse_homework_status(new_homework.get('homeworks')[0]),
                     parse_homework_status(
                         new_homework.get('homeworks')[0]
                     ),
@@ -80,7 +81,7 @@ def main():
                 'current_date',
                 current_timestamp
             )
-            time.sleep(300)  # опрашивать раз в пять минут
+            time.sleep(300)
 
         except Exception as e:
             print(f'Бот столкнулся с ошибкой: {e}')
