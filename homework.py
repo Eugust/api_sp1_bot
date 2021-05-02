@@ -45,15 +45,12 @@ def get_homework_statuses(current_timestamp):
     headers = {
         "Authorization": f"OAuth {PRAKTIKUM_TOKEN}"
     }
-    try:
-        homework_statuses = requests.get(
-            API_PRAKTIKUM,
-            params=params,
-            headers=headers
-        )
-        return homework_statuses.json()
-    except Exception as e:
-        logger.error(f"Ошибка получения статуса {e}")
+    homework_statuses = requests.get(
+        API_PRAKTIKUM,
+        params=params,
+        headers=headers
+    )
+    return homework_statuses.json()
 
 
 def send_message(message, bot_client):
