@@ -45,6 +45,11 @@ def get_homework_statuses(current_timestamp):
         "Authorization": f"OAuth {PRAKTIKUM_TOKEN}"
     }
     homework_statuses = requests.get(API_PRAKTIKUM, params=params, headers=headers)
+    homework_statuses = requests.get(
+        API_PRAKTIKUM,
+        params=params,
+        headers=headers
+    )
     return homework_statuses.json()
 
 
@@ -65,10 +70,16 @@ def main():
             if new_homework.get('homeworks'):
                 send_message(
                     parse_homework_status(new_homework.get('homeworks')[0]),
+                    parse_homework_status(
+                        new_homework.get('homeworks')[0]
+                    ),
                     bot_client
                 )
                 logging.info("Message sent")
-            current_timestamp = new_homework.get('current_date', current_timestamp)
+            current_timestamp = new_homework.get(
+                'current_date',
+                current_timestamp
+            )
             time.sleep(300)  # опрашивать раз в пять минут
 
         except Exception as e:
