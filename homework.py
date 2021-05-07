@@ -25,7 +25,7 @@ logger.addHandler(handler)
 PRAKTIKUM_TOKEN = os.getenv("PRAKTIKUM_TOKEN")
 TELEGRAM_TOKEN = os.getenv('TELEGRAM_TOKEN')
 CHAT_ID = os.getenv('TELEGRAM_CHAT_ID')
-API_PRAKTIKUM = os.getenv("API_PRAKTIKUM")
+API_PRAKTIKUM = "https://praktikum.yandex.ru/api/user_api/homework_statuses/"
 SUCCESS = 'Ревьюеру всё понравилось, можно приступать к следующему уроку.'
 
 
