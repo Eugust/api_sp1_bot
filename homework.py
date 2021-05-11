@@ -39,13 +39,17 @@ def parse_homework_status(homework):
         homework_name = homework["homework_name"]
         homework_status = homework["status"]
         verdict = dict_verdict[homework_status]
+        if homework_status == "reviewing":
+            return verdict
         return f'У вас проверили работу "{homework_name}"!\n\n{verdict}'
     except KeyError as e:
         logging.error(f'Ошибка {e}')
         return "Неверный ответ сервера"
 
 
-def get_homework_statuses(current_timestamp=int(time.time())):
+def get_homework_statuses(current_timestamp=None):
+    if current_timestamp is None:
+        current_timestamp = int(time.time())
     params = {"from_date": current_timestamp}
     headers = {"Authorization": f"OAuth {PRAKTIKUM_TOKEN}"}
     try:
@@ -55,7 +59,7 @@ def get_homework_statuses(current_timestamp=int(time.time())):
             headers=headers
         )
         return homework_statuses.json()
-    except Exception as e:
+    except requests.exceptions.RequestException as e:
         logging.error(e)
 
 
