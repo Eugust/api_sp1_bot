@@ -30,32 +30,37 @@ SUCCESS = 'Ревьюеру всё понравилось, можно прист
 
 
 def parse_homework_status(homework):
-    homework_name = homework.get("homework_name")
-    if homework.get("status") == "rejected":
-        verdict = 'К сожалению в работе нашлись ошибки.'
-    else:
-        verdict = SUCCESS
-    return f'У вас проверили работу "{homework_name}"!\n\n{verdict}'
+    dict_verdict = {
+        "rejected": 'К сожалению в работе нашлись ошибки.',
+        "reviewing": 'Работа взята в ревью.',
+        "approved": SUCCESS
+    }
+    try:
+        homework_name = homework["homework_name"]
+        homework_status = homework["status"]
+        verdict = dict_verdict[homework_status]
+        return f'У вас проверили работу "{homework_name}"!\n\n{verdict}'
+    except KeyError as e:
+        logging.error(f'Ошибка {e}')
+        return "Неверный ответ сервера"
 
 
-def get_homework_statuses(current_timestamp):
-    params = {
-        "from_date": current_timestamp
-    }
-    headers = {
-        "Authorization": f"OAuth {PRAKTIKUM_TOKEN}"
-    }
-    homework_statuses = requests.get(
-        API_PRAKTIKUM,
-        params=params,
-        headers=headers
-    )
-    return homework_statuses.json()
+def get_homework_statuses(current_timestamp=int(time.time())):
+    params = {"from_date": current_timestamp}
+    headers = {"Authorization": f"OAuth {PRAKTIKUM_TOKEN}"}
+    try:
+        homework_statuses = requests.get(
+            API_PRAKTIKUM,
+            params=params,
+            headers=headers
+        )
+        return homework_statuses.json()
+    except Exception as e:
+        logging.error(e)
 
 
 def send_message(message, bot_client):
-    chat_id = CHAT_ID
-    return bot_client.send_message(chat_id, message)
+    return bot_client.send_message(CHAT_ID, message)
 
 
 def main():
@@ -81,7 +86,7 @@ def main():
             time.sleep(300)
 
         except Exception as e:
-            print(f'Бот столкнулся с ошибкой: {e}')
+            logging.error(f'Бот столкнулся с ошибкой: {e}')
             time.sleep(5)
 
 
