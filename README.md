@@ -1,2 +1,9 @@
 # api_sp1_bot
-api sp1 bot
+A small telegram bot for sending a notification about the result of a work check.
+## Tools
+Python
+## Instruction
+Run
+```
+python bot.py
+```
